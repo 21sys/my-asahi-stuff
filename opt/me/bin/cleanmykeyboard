@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+import tkinter as tk
+from tkinter import simpledialog, messagebox
+import subprocess
+
+# **YOUR** inhibit-path:
+# find out i.e. with: cat /proc/bus/input/devices | grep -E -A3 'keyboard|AT Translated', copy sysfs path and append /inhibited
+# (this path is for my Macbook Air M2 on Asahi Fedora 42)
+DEVICE = '/sys/devices/platform/soc/24eb14000.fifo/24eb30000.input/0019:05AC:0351.0003/input/input1/inhibited'
+
+class KeyLockApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Keyboard Lock")
+        self.locked = False
+        self.password = None
+        self.btn = tk.Button(self, text="Lock Keyboard", width=16, command=self.toggle)
+        self.btn.pack(padx=20, pady=20)
+
+    def toggle(self):
+        val = '1' if not self.locked else '0'
+        # first try direct write
+        try:
+            with open(DEVICE, 'w') as f:
+                f.write(val)
+        except PermissionError:
+            # need sudo - reuse cached password if we have it
+            if self.password is None:
+                pwd = simpledialog.askstring("Authentication",
+                                             "Enter your sudo password:",
+                                             show='*',
+                                             parent=self)
+                if not pwd:
+                    return
+                self.password = pwd
+            else:
+                pwd = self.password
+
+            cmd = ['sudo', '-S', '-p', '', 'sh', '-c', f'echo {val} > {DEVICE}']
+            proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            _, err = proc.communicate(pwd + '\n')
+            if proc.returncode != 0:
+                # bad password or other error: clear cache so they can re-enter next time
+                self.password = None
+                messagebox.showerror("Error",
+                                     f"Failed to write to {DEVICE}:\n{err.strip()}",
+                                     parent=self)
+                return
+
+        # toggle state and update button
+        self.locked = not self.locked
+        self.btn.config(text="Unlock Keyboard" if self.locked else "Lock Keyboard")
+
+if __name__ == "__main__":
+    app = KeyLockApp()
+    app.mainloop()
+

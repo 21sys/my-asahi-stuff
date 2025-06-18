@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=CleanMyKeyboard
+GenericName=Keyboard Lock
+GenericName[de]=Tastatur Sperre
+Comment=Lock your keyboard for cleaning
+Comment[de]=Sperre deine Tastatur zum Reinigen
+Exec=cleanmykeyboard
+Terminal=false
+Icon=input-keyboard
+Type=Application
+Categories=Utilities;System;
+Version=1.0
