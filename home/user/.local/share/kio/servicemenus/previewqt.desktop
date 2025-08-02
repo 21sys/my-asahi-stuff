@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=KonqPopupMenu/Plugin
+MimeType=all/allfiles;
+Actions=openWithPreviewQt;
+X-KDE-Priority=TopLevel
+
+[Desktop Action openWithPreviewQt]
+Name=Open with PreviewQt
+Icon=previewqt
+Exec=flatpak run org.previewqt.PreviewQt %f
