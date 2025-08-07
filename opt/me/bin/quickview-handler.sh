@@ -1,7 +1,12 @@
 #!/bin/bash
 
-# Get file path from clipboard and strip file:// prefix
-file_path=$(wl-paste | sed 's|^file://||' | tr -d '\r\n')
+# Get file:// url from clipboard and remove trailing newline
+file_url=$(wl-paste | tr -d '\r\n')
+
+# decode url with python
+file_path=$(python3 -c "import urllib.parse; u=urllib.parse.urlparse('$file_url'); print(urllib.parse.unquote(u.path))")
+
+echo $file_path
 
 # Exit silently if empty
 [[ -z "$file_path" ]] && exit 0
